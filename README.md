@@ -1,2 +1,330 @@
-# hotel-search
-High-performance REST API (Java 21, Spring Boot 3.4) using Virtual Threads (Loom) for concurrent events. Hexagonal Architecture decouples domain logic from Kafka &amp; PostgreSQL. Focuses on strict immutability (Records), thread-safety, and robust validation. Includes 80%+ JaCoCo test coverage and OpenAPI documentation.
+# Hotel Search Service
+
+REST API that accepts hotel availability searches, publishes them to Kafka, and counts how many times the same search has been performed.
+
+Built with **Java 21**, **Spring Boot 3.4**, **Apache Kafka**, **PostgreSQL 17**, and **Hexagonal Architecture**.
+
+---
+
+## Table of Contents
+
+1. [Architecture](#architecture)
+2. [Prerequisites](#prerequisites)
+3. [Running the Application](#running-the-application)
+4. [API Reference](#api-reference)
+5. [Swagger UI](#swagger-ui)
+6. [Test Coverage Report](#test-coverage-report)
+7. [Project Structure](#project-structure)
+8. [Design Decisions](#design-decisions)
+
+---
+
+## Architecture
+
+The project follows **Hexagonal Architecture** (Ports & Adapters):
+
+```
+com.hotel.search
+├── domain/                    ← Pure domain model (no framework dependencies)
+│   └── model/
+├── application/               ← Use cases and port interfaces
+|   ├── exception              ← Exceptions thrown by use cases (mapped to HTTP errors in the controller)
+│   ├── port/in/               ← Input ports (use case interfaces)
+│   ├── port/out/              ← Output ports (repository, event publisher)
+│   └── service/               ← Use case implementations
+└── infrastructure/            ← Framework adapters (Spring, Kafka, JPA, REST)
+    ├── adapter/in/rest/       ← REST controllers, DTOs, validation, mappers
+    └── adapter/out/
+        ├── kafka/
+        │   ├── producer/      ← Kafka message publisher
+        │   └── consumer/      ← Kafka message consumer → DB
+        └── persistence/       ← JPA entities, repository, adapter
+```
+
+### Flow
+
+```
+HTTP POST /search
+    └─► SearchController
+            └─► SearchService (generates UUID, no DB access)
+                    └─► KafkaSearchEventPublisher  ──► Kafka topic
+                                                            │
+                                                   KafkaSearchConsumer
+                                                            └─► SearchRepositoryAdapter ──► PostgreSQL
+
+HTTP GET /count?searchId=xxx
+    └─► SearchController
+            └─► CountService
+                    └─► SearchRepositoryAdapter ──► PostgreSQL
+```
+
+---
+
+## Prerequisites
+
+Only **Docker** and **Docker Compose** are required. No JDK, Maven, or database installation needed.
+
+```bash
+docker --version        # Docker 24+
+docker compose version  # Docker Compose v2.20+
+```
+
+---
+
+## Running the Application
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd hotel-search
+```
+
+### 2. Start the full stack
+
+The Docker Compose file compiles the application inside a builder container — no local Maven or JDK needed.
+
+```bash
+docker compose up --build
+```
+
+This starts:
+- **PostgreSQL 17** (port 1521)
+- **Zookeeper** (port 2181)
+- **Kafka** (port 9092)
+- **hotel-search app** (port 8080)
+
+> ℹ️ PostgreSQL initialises in ~5 seconds on first run. The app container will not start until PostgreSQL passes its healthcheck. You will see the app container in `starting` or `restarting` state — this is normal. Wait for the log line:
+> ```
+> hotel-search-app | Started HotelSearchApplication
+> ```
+
+### 3. Verify the application is running
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+### 4. Stop the stack
+
+```bash
+docker compose down
+```
+
+To also remove persisted PostgreSQL data:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## API Reference
+
+### POST /search
+
+Submits a hotel availability search. Returns a unique `searchId`.
+
+**Request:**
+
+```bash
+curl -X POST http://localhost:8080/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hotelId": "1234aBc",
+    "checkIn": "29/12/2023",
+    "checkOut": "31/12/2023",
+    "ages": [30, 29, 1, 3]
+  }'
+```
+
+**Response `202 Accepted`:**
+
+```json
+{
+  "searchId": "a3f1c2d4-5e6f-7890-abcd-ef1234567890"
+}
+```
+
+**Validation rules:**
+- `hotelId`: required, alphanumeric only
+- `checkIn`: required, format `dd/MM/yyyy`, must be before `checkOut`
+- `checkOut`: required, format `dd/MM/yyyy`
+- `ages`: required, at least one element
+
+---
+
+### GET /count
+
+Returns the number of times the same search was performed (age order matters).
+
+**Request:**
+
+```bash
+curl "http://localhost:8080/count?searchId=a3f1c2d4-5e6f-7890-abcd-ef1234567890"
+```
+
+**Response `200 OK`:**
+
+```json
+{
+  "searchId": "a3f1c2d4-5e6f-7890-abcd-ef1234567890",
+  "search": {
+    "hotelId": "1234aBc",
+    "checkIn": "2023-12-29",
+    "checkOut": "2023-12-31",
+    "ages": [30, 29, 1, 3]
+  },
+  "count": 1
+}
+```
+
+> **Note:** `[30, 29, 1, 3]` and `[3, 29, 30, 1]` are treated as **different** searches because age order is significant.
+
+---
+
+## Swagger UI
+
+Once the application is running, the interactive API documentation is available at:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+OpenAPI JSON spec:
+
+```
+http://localhost:8080/v3/api-docs
+```
+
+---
+
+## Test Coverage Report
+
+### Run tests and generate report
+
+The coverage report is generated by **JaCoCo** during the `verify` phase.
+
+#### Option A – with Docker (no local JDK needed)
+
+```bash
+docker run --rm \
+  -v "$(pwd)":/build \
+  -w /build \
+  maven:3.9.9-eclipse-temurin-21-alpine \
+  mvn verify
+```
+
+#### Option B – with local Maven/JDK
+
+```bash
+mvn verify
+```
+
+### View the report
+
+After the build completes, open the HTML report in your browser:
+
+```
+target/site/jacoco/index.html
+```
+
+### Coverage thresholds
+
+The build **fails** if any of the following drops below **80 %**:
+
+| Counter     | Minimum |
+|-------------|---------|
+| Lines       | 80 %    |
+| Branches    | 80 %    |
+| Methods     | 80 %    |
+| Instructions| 80 %    |
+
+---
+
+## Project Structure
+
+```
+hotel-search/
+├── docker/
+│   └── postgres/init/01-schema.sql      # DB schema (auto-applied on first run)
+├── src/
+│   ├── main/
+│   │   ├── java/com/hotel/search/
+│   │   │   ├── HotelSearchApplication.java
+│   │   │   ├── domain/model/
+│   │   │   │   ├── Search.java
+│   │   │   │   └── SearchCount.java
+│   │   │   ├── application/
+│   │   │   │   ├── port/in/
+│   │   │   │   │   ├── SearchUseCase.java
+│   │   │   │   │   └── CountUseCase.java
+│   │   │   │   ├── port/out/
+│   │   │   │   │   ├── SearchEventPublisher.java
+│   │   │   │   │   └── SearchRepository.java
+│   │   │   │   └── service/
+│   │   │   │       ├── SearchService.java
+│   │   │   │       └── CountService.java
+│   │   │   └── infrastructure/
+│   │   │       ├── adapter/in/rest/
+│   │   │       │   ├── controller/SearchController.java
+│   │   │       │   ├── controller/GlobalExceptionHandler.java
+│   │   │       │   ├── dto/SearchRequestDTO.java
+│   │   │       │   ├── dto/SearchResponseDTO.java
+│   │   │       │   ├── dto/CountResponseDTO.java
+│   │   │       │   ├── mapper/SearchRestMapper.java
+│   │   │       │   └── validation/
+│   │   │       │       ├── CheckInBeforeCheckOut.java
+│   │   │       │       └── CheckInBeforeCheckOutValidator.java
+│   │   │       ├── adapter/out/kafka/
+│   │   │       │   ├── producer/KafkaSearchEventPublisher.java
+│   │   │       │   └── consumer/KafkaSearchConsumer.java
+│   │   │       ├── adapter/out/persistence/
+│   │   │       │   ├── adapter/SearchRepositoryAdapter.java
+│   │   │       │   ├── entity/SearchEntity.java
+│   │   │       │   ├── mapper/SearchPersistenceMapper.java
+│   │   │       │   └── repository/JpaSearchRepository.java
+│   │   │       └── config/
+│   │   │           ├── JacksonConfig.java
+│   │   │           ├── KafkaConfig.java
+│   │   │           └── OpenApiConfig.java
+│   │   └── resources/application.yml
+│   └── test/
+│       ├── java/com/hotel/search/
+│       │   ├── TestFixtures.java
+│       │   ├── application/service/
+│       │   │   ├── SearchServiceTest.java
+│       │   │   └── CountServiceTest.java
+│       │   └── infrastructure/adapter/
+│       │       ├── in/rest/controller/
+│       │       │   ├── SearchControllerTest.java
+│       │       │   ├── SearchRestMapperTest.java
+│       │       │   └── CheckInBeforeCheckOutValidatorTest.java
+│       │       └── out/
+│       │           ├── kafka/
+│       │           │   ├── KafkaSearchEventPublisherTest.java
+│       │           │   └── KafkaSearchConsumerTest.java
+│       │           └── persistence/
+│       │               ├── SearchRepositoryAdapterTest.java
+│       │               └── SearchPersistenceMapperTest.java
+│       └── resources/application-test.yml
+├── Dockerfile
+├── docker-compose.yml
+└── pom.xml
+```
+
+---
+
+## Design Decisions
+
+| Decision | Rationale |
+|---|---|
+| **Hexagonal Architecture** | Domain and application layers are fully isolated from Spring, Kafka, and JPA. Ports define contracts; adapters implement them. |
+| **Java Records** | `Search`, `SearchCount`, `SearchRequestDTO`, etc. are declared as `record` for guaranteed immutability with minimal boilerplate. |
+| **UUID generated in service** | The `searchId` is a `UUID.randomUUID()` — no database round-trip needed, safe under concurrent load. |
+| **Virtual Threads** | `spring.threads.virtual.enabled=true` enables Project Loom virtual threads for Tomcat and Kafka listeners, significantly improving I/O-bound throughput. |
+| **Ages stored as CSV** | Ages are stored as a comma-separated string to preserve insertion order. The JPQL count query compares the `ages` column directly, so `[30,29,1]` ≠ `[1,29,30]`. |
+| **No String concatenation with `+`** | All dynamic strings use `String.format`, `StringBuilder`, or `String.join`. |
+| **SQL injection prevention** | All JPA queries use named parameters (`:searchId`). The `hotelId` field is validated with `@Pattern(regexp = "^[a-zA-Z0-9]+$")`. |
+| **ProblemDetail (RFC 7807)** | Error responses follow the standard problem+json format for consistency. |
+| **Minimal dependencies** | No MapStruct, Lombok, or other annotation processors. Only production-grade, actively maintained dependencies. |

@@ -1,0 +1,14 @@
+# ─────────────────────────────────────────────────────────────────
+# Profile: local
+# Use when running the app from the IDE with infrastructure on Docker:
+#   docker compose up postgres kafka zookeeper
+# Then run: -Dspring.profiles.active=local
+# ─────────────────────────────────────────────────────────────────
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hotelsearch
+    username: hotelsearch
+    password: hotelsearch
+
+  kafka:
+    bootstrap-servers: localhost:9093

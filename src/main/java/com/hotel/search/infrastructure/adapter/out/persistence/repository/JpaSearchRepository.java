@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+
 public interface JpaSearchRepository extends JpaRepository<SearchEntity, Long> {
 
     Optional<SearchEntity> findFirstBySearchId(@Param("searchId") String searchId);

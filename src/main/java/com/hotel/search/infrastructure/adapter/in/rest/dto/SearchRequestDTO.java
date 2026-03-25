@@ -60,11 +60,11 @@ public record SearchRequestDTO(
 
 ) {
 
-
+    /**
+     * Compact constructor that defensively copies the {@code ages} list to ensure
+     * no caller can mutate the internal list after construction.
+     */
     public SearchRequestDTO {
-    	if (checkIn != null && checkOut != null && !checkIn.isBefore(checkOut)) {
-        	throw new IllegalArgumentException("Check-in must be before check-out");
-    	}
-    	ages = (ages != null) ? List.copyOf(ages) : List.of();
-	}
+        ages = (ages != null) ? List.copyOf(ages) : List.of();
+    }
 }

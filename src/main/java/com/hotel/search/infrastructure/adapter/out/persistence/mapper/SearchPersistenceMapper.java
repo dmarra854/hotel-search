@@ -2,12 +2,14 @@ package com.hotel.search.infrastructure.adapter.out.persistence.mapper;
 
 import com.hotel.search.domain.model.Search;
 import com.hotel.search.infrastructure.adapter.out.persistence.entity.SearchEntity;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Component
 public class SearchPersistenceMapper {
 

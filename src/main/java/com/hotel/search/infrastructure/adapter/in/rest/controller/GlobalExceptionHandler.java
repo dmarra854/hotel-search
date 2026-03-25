@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -22,7 +23,6 @@ public class GlobalExceptionHandler {
         problem.setTitle("Validation failed");
         return problem;
     }
-
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {

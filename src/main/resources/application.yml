@@ -2,8 +2,6 @@ spring:
   application:
     name: hotel-search
 
-  # Virtual threads (Project Loom) — enables virtual thread executor for
-  # Tomcat and Kafka listeners, improving I/O-bound throughput.
   threads:
     virtual:
       enabled: true

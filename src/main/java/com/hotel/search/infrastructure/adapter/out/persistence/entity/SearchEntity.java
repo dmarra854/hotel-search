@@ -6,11 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
-
 @Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Entity
 @Table(name = "hotel_search")
 public class SearchEntity {
@@ -33,9 +36,6 @@ public class SearchEntity {
 
     @Column(name = "ages", nullable = false)
     private String ages;
-
-    protected SearchEntity() {
-    }
 
     public SearchEntity(String searchId, String hotelId, LocalDate checkIn,
                         LocalDate checkOut, String ages) {

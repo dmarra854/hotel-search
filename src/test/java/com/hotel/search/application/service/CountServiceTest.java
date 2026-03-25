@@ -10,8 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -35,7 +33,7 @@ class CountServiceTest {
     @DisplayName("should return SearchCount with correct fields when search exists")
     void shouldReturnSearchCountWhenSearchExists() {
         given(searchRepository.findBySearchId(TestFixtures.SEARCH_ID))
-                .willReturn(Optional.of(TestFixtures.SEARCH));
+                .willReturn(TestFixtures.SEARCH);
         given(searchRepository.countBySearchId(TestFixtures.SEARCH_ID))
                 .willReturn(5L);
 

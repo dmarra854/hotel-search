@@ -26,6 +26,10 @@ public class KafkaConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
+    // -----------------------------------------------------------------------
+    // Producer
+    // -----------------------------------------------------------------------
+
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -41,6 +45,10 @@ public class KafkaConfig {
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
+
+    // -----------------------------------------------------------------------
+    // Consumer
+    // -----------------------------------------------------------------------
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {

@@ -1,6 +1,11 @@
+# ─────────────────────────────────────────────────────────────────
+# Hotel Search – complete stack
+# Run with:  docker compose up --build
+# ─────────────────────────────────────────────────────────────────
+
 services:
 
-  # PostgreSQL
+  # ── PostgreSQL ────────────────────────────────────────────────
   postgres:
     image: postgres:17-alpine
     container_name: hotel-postgres
@@ -20,7 +25,7 @@ services:
       retries: 10
       start_period: 10s
 
-  # Zookeeper
+  # ── Zookeeper ─────────────────────────────────────────────────
   zookeeper:
     image: confluentinc/cp-zookeeper:7.9.0
     container_name: hotel-zookeeper
@@ -33,7 +38,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Kafka
+  # ── Kafka ──────────────────────────────────────────────────────
   kafka:
     image: confluentinc/cp-kafka:7.9.0
     container_name: hotel-kafka
@@ -58,7 +63,7 @@ services:
       retries: 10
       start_period: 30s
 
-  # Spring Boot Application
+  # ── Spring Boot Application ────────────────────────────────────
   hotel-search:
     build:
       context: .

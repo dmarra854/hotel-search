@@ -40,6 +40,10 @@ class SearchControllerTest {
     @MockitoBean
     private CountUseCase countUseCase;
 
+    // -----------------------------------------------------------------------
+    // POST /search
+    // -----------------------------------------------------------------------
+
     @Test
     @DisplayName("POST /search with valid payload returns 202 and searchId")
     void postSearch_validPayload_returns202() throws Exception {
@@ -122,6 +126,10 @@ class SearchControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    // -----------------------------------------------------------------------
+    // GET /count
+    // -----------------------------------------------------------------------
 
     @Test
     @DisplayName("GET /count with valid searchId returns 200 and count details")

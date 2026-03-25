@@ -61,7 +61,7 @@ class SearchRepositoryAdapterTest {
         given(jpaSearchRepository.findFirstBySearchId(TestFixtures.SEARCH_ID))
                 .willReturn(Optional.of(entity));
 
-        Search result = adapter.findBySearchId("some-id").orElseThrow();
+        Search result = adapter.findBySearchId(TestFixtures.SEARCH_ID);
 
         assertAll(
                 () -> assertThat(result).isNotNull(),
@@ -77,7 +77,7 @@ class SearchRepositoryAdapterTest {
         given(jpaSearchRepository.findFirstBySearchId("missing-id"))
                 .willReturn(Optional.empty());
 
-        Search result = adapter.findBySearchId("missing-id").orElseThrow();
+        Search result = adapter.findBySearchId("missing-id");
 
         assertThat(result).isNull();
     }

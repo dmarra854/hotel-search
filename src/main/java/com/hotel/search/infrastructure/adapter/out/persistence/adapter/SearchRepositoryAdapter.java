@@ -26,13 +26,15 @@ public class SearchRepositoryAdapter implements SearchRepository {
         SearchEntity entity = mapper.toEntity(search);
         jpaSearchRepository.save(entity);
     }
+
     @Override
     public long countBySearchId(String searchId) {
         return jpaSearchRepository.countBySameSearchCriteria(searchId);
     }
 
     @Override
-    public Optional<Search> findBySearchId(String searchId) {
-        return jpaSearchRepository.findFirstBySearchId(searchId)
-                .map(mapper::toDomain);
-    }}
+    public Search findBySearchId(String searchId) {
+        Optional<SearchEntity> entity = jpaSearchRepository.findFirstBySearchId(searchId);
+        return entity.map(mapper::toDomain).orElse(null);
+    }
+}

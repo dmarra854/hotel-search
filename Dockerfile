@@ -1,18 +1,33 @@
-# Compilación (Build)
-FROM maven:3.9.6-eclipse-temurin-21 AS build
-WORKDIR /app
-# Copia pom y descarga dependencias
+# ─────────────────────────────────────────────
+# Stage 1: Build the application with Maven
+# ─────────────────────────────────────────────
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+
+# Copy dependency descriptors first to exploit Docker layer cache
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -q
 
-# Copia código fuente y compila
+# Copy source code and build (skip tests — tests run in CI, not at image build time)
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn package -DskipTests -q
 
-# Ejecución
-FROM eclipse-temurin:21-jre-jammy
+# ─────────────────────────────────────────────
+# Stage 2: Minimal JRE runtime image
+# ─────────────────────────────────────────────
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+# Non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 WORKDIR /app
-# Copiamos solo el JAR resultante de la etapa anterior
-COPY --from=build /app/target/*.jar app.jar
 
-ENTRYPOINT ["java", "-XX:+UseZGC", "-jar", "app.jar"]
+COPY --from=builder /build/target/hotel-search-1.0.0.jar app.jar
+
+EXPOSE 8080
+
+# Virtual threads are enabled via spring.threads.virtual.enabled=true in application.yml
+# -XX:+UseContainerSupport ensures JVM respects Docker CPU/memory limits
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-jar", "app.jar"]

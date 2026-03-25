@@ -28,6 +28,7 @@ com.hotel.search
 ├── domain/                    ← Pure domain model (no framework dependencies)
 │   └── model/
 ├── application/               ← Use cases and port interfaces
+│   ├── exception              ← Exceptions
 │   ├── port/in/               ← Input ports (use case interfaces)
 │   ├── port/out/              ← Output ports (repository, event publisher)
 │   └── service/               ← Use case implementations

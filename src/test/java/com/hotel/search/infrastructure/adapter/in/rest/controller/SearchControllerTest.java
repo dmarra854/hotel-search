@@ -46,7 +46,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("POST /search with valid payload returns 202 and searchId")
-    void postSearch_validPayload_returns202() throws Exception {
+    void postSearchWithValidPayloadReturns202() throws Exception {
         given(searchUseCase.search(any())).willReturn(TestFixtures.SEARCH_ID);
 
         mockMvc.perform(post("/search")
@@ -58,7 +58,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("POST /search with missing hotelId returns 400")
-    void postSearch_missingHotelId_returns400() throws Exception {
+    void postSearchMissingHotelIdReturns400() throws Exception {
         String body = """
                 {
                   "checkIn": "29/12/2023",
@@ -75,7 +75,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("POST /search with checkIn after checkOut returns 400")
-    void postSearch_checkInAfterCheckOut_returns400() throws Exception {
+    void postSearchWithCheckInAfterCheckOutReturns400() throws Exception {
         String body = """
                 {
                   "hotelId": "1234aBc",
@@ -93,7 +93,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("POST /search with empty ages returns 400")
-    void postSearch_emptyAges_returns400() throws Exception {
+    void postSearchEmptyAgesReturns400() throws Exception {
         String body = """
                 {
                   "hotelId": "1234aBc",
@@ -111,7 +111,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("POST /search with non-alphanumeric hotelId returns 400")
-    void postSearch_nonAlphanumericHotelId_returns400() throws Exception {
+    void postSearchNonAlphanumericHotelIdReturns400() throws Exception {
         String body = """
                 {
                   "hotelId": "hotel<script>",
@@ -133,7 +133,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("GET /count with valid searchId returns 200 and count details")
-    void getCount_validSearchId_returns200() throws Exception {
+    void getCountValidSearchIdReturns200() throws Exception {
         SearchCount searchCount = new SearchCount(
                 TestFixtures.SEARCH_ID, TestFixtures.SEARCH, 100L);
         given(countUseCase.count(eq(TestFixtures.SEARCH_ID))).willReturn(searchCount);
@@ -148,7 +148,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("GET /count with unknown searchId returns 404")
-    void getCount_unknownSearchId_returns404() throws Exception {
+    void getCountUnknownSearchIdReturns404() throws Exception {
         given(countUseCase.count(eq("unknown-id")))
                 .willThrow(new IllegalArgumentException("No search found for searchId: unknown-id"));
 
@@ -159,7 +159,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("GET /count with blank searchId returns 400")
-    void getCount_blankSearchId_returns400() throws Exception {
+    void getCountBlankSearchIdReturns400() throws Exception {
         mockMvc.perform(get("/count")
                         .param("searchId", "   "))
                 .andExpect(status().isBadRequest());
@@ -167,7 +167,7 @@ class SearchControllerTest {
 
     @Test
     @DisplayName("GET /count without searchId param returns 400")
-    void getCount_missingSearchId_returns400() throws Exception {
+    void getCountMissingSearchIdReturns400() throws Exception {
         mockMvc.perform(get("/count"))
                 .andExpect(status().isBadRequest());
     }

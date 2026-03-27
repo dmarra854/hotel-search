@@ -52,7 +52,7 @@ class SearchPersistenceMapperTest {
 
     @Test
     @DisplayName("round-trip toEntity -> toDomain should preserve all values")
-    void roundTripShouldPreserveValues() {
+    void shouldPreserveAllValuesOnRoundTrip() {
         SearchEntity entity = mapper.toEntity(TestFixtures.SEARCH);
         Search restored = mapper.toDomain(entity);
 

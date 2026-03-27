@@ -4,9 +4,7 @@ import com.hotel.search.application.port.in.CountUseCase;
 import com.hotel.search.application.port.out.SearchRepository;
 import com.hotel.search.domain.model.Search;
 import com.hotel.search.domain.model.SearchCount;
-import org.springframework.stereotype.Service;
 
-@Service
 public class CountService implements CountUseCase {
 
     private final SearchRepository searchRepository;

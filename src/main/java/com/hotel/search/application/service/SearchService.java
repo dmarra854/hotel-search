@@ -3,10 +3,9 @@ package com.hotel.search.application.service;
 import com.hotel.search.application.port.in.SearchUseCase;
 import com.hotel.search.application.port.out.SearchEventPublisher;
 import com.hotel.search.domain.model.Search;
-import org.springframework.stereotype.Service;
 
 import java.util.UUID;
-@Service
+
 public class SearchService implements SearchUseCase {
 
     private final SearchEventPublisher searchEventPublisher;

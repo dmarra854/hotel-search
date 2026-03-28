@@ -11,12 +11,14 @@ public interface JpaSearchRepository extends JpaRepository<SearchEntity, Long> {
 
     Optional<SearchEntity> findFirstBySearchId(@Param("searchId") String searchId);
 
-    @Query("""
-            SELECT COUNT(s) FROM SearchEntity s
-            WHERE s.hotelId   = (SELECT r.hotelId   FROM SearchEntity r WHERE r.searchId = :searchId)
-              AND s.checkIn   = (SELECT r.checkIn   FROM SearchEntity r WHERE r.searchId = :searchId)
-              AND s.checkOut  = (SELECT r.checkOut  FROM SearchEntity r WHERE r.searchId = :searchId)
-              AND s.ages      = (SELECT r.ages      FROM SearchEntity r WHERE r.searchId = :searchId)
-            """)
+    @Query(value = """
+            SELECT COUNT(s.id)
+            FROM hotel_search s
+            JOIN hotel_search ref ON ref.search_id = :searchId
+            WHERE s.hotel_id  = ref.hotel_id
+              AND s.check_in  = ref.check_in
+              AND s.check_out = ref.check_out
+              AND s.ages      = ref.ages
+            """, nativeQuery = true)
     long countBySameSearchCriteria(@Param("searchId") String searchId);
 }

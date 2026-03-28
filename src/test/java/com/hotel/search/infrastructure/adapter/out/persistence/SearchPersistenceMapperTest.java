@@ -31,7 +31,7 @@ class SearchPersistenceMapperTest {
                 () -> assertThat(entity.getHotelId()).isEqualTo(TestFixtures.HOTEL_ID),
                 () -> assertThat(entity.getCheckIn()).isEqualTo(TestFixtures.CHECK_IN),
                 () -> assertThat(entity.getCheckOut()).isEqualTo(TestFixtures.CHECK_OUT),
-                () -> assertThat(entity.getAges()).isEqualTo("30,29,1,3")
+                () -> assertThat(entity.getAges()).containsExactly(30, 29, 1, 3)
         );
     }
 
@@ -44,8 +44,6 @@ class SearchPersistenceMapperTest {
         assertAll(
                 () -> assertThat(domain.searchId()).isEqualTo(TestFixtures.SEARCH_ID),
                 () -> assertThat(domain.hotelId()).isEqualTo(TestFixtures.HOTEL_ID),
-                () -> assertThat(domain.checkIn()).isEqualTo(TestFixtures.CHECK_IN),
-                () -> assertThat(domain.checkOut()).isEqualTo(TestFixtures.CHECK_OUT),
                 () -> assertThat(domain.ages()).containsExactly(30, 29, 1, 3)
         );
     }
@@ -57,5 +55,10 @@ class SearchPersistenceMapperTest {
         Search restored = mapper.toDomain(entity);
 
         assertThat(restored).isEqualTo(TestFixtures.SEARCH);
+    }
+
+    @Test
+    void shouldReturnNullWhenMappingNullEntity() {
+        assertThat(mapper.toDomain(null)).isNull();
     }
 }

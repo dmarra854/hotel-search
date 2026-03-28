@@ -11,7 +11,7 @@ public class CheckInBeforeCheckOutValidator
     @Override
     public boolean isValid(SearchRequestDTO dto, ConstraintValidatorContext context) {
         if (dto.checkIn() == null || dto.checkOut() == null) {
-            return true; // @NotNull handles nulls separately
+            return true;
         }
         return dto.checkIn().isBefore(dto.checkOut());
     }

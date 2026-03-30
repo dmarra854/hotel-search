@@ -2,11 +2,10 @@ package com.hotel.search.application.service;
 
 import com.hotel.search.application.port.in.CountUseCase;
 import com.hotel.search.application.port.out.SearchRepository;
+import com.hotel.search.domain.exception.SearchNotFoundException;
 import com.hotel.search.domain.model.Search;
 import com.hotel.search.domain.model.SearchCount;
-import org.springframework.stereotype.Service;
 
-@Service
 public class CountService implements CountUseCase {
 
     private final SearchRepository searchRepository;
@@ -19,8 +18,7 @@ public class CountService implements CountUseCase {
     public SearchCount count(String searchId) {
         Search search = searchRepository.findBySearchId(searchId);
         if (search == null) {
-            throw new IllegalArgumentException(
-                    String.format("No search found for searchId: %s", searchId));
+            throw new SearchNotFoundException(searchId);
         }
         long count = searchRepository.countBySearchId(searchId);
         return new SearchCount(searchId, search, count);

@@ -2,6 +2,7 @@ package com.hotel.search.application.service;
 
 import com.hotel.search.TestFixtures;
 import com.hotel.search.application.port.out.SearchEventPublisher;
+import com.hotel.search.domain.exception.SearchDomainException;
 import com.hotel.search.domain.model.Search;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +12,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,5 +75,20 @@ class SearchServiceTest {
         String id2 = searchService.search(TestFixtures.SEARCH_WITHOUT_ID);
 
         assertThat(id1).isNotEqualTo(id2);
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException when ages are negative")
+    void shouldNotAllowNegativeAges() {
+        List<Integer> invalidAges = List.of(30, -1, 5);
+
+        assertThatThrownBy(() -> new Search(
+                UUID.randomUUID().toString(),
+                "HOTEL_123",
+                LocalDate.now(),
+                LocalDate.now().plusDays(2),
+                invalidAges))
+                .isInstanceOf(SearchDomainException.class)
+                .hasMessageContaining("Domain Error: Invalid ages detected");
     }
 }

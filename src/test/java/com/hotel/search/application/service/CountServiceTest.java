@@ -49,12 +49,12 @@ class CountServiceTest {
     }
 
     @Test
-    @DisplayName("should throw IllegalArgumentException when searchId is not found")
+    @DisplayName("should throw SearchNotFoundException when searchId is not found")
     void shouldThrowWhenSearchIdNotFound() {
         given(searchRepository.findBySearchId("unknown-id")).willReturn(null);
-
         assertThatThrownBy(() -> countService.count("unknown-id"))
-                .isInstanceOf(IllegalArgumentException.class)
+                // Update the expected class here:
+                .isInstanceOf(com.hotel.search.domain.exception.SearchNotFoundException.class)
                 .hasMessageContaining("unknown-id");
     }
 }

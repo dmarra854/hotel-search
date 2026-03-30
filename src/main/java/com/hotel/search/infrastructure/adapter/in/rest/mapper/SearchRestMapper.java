@@ -19,12 +19,6 @@ public class SearchRestMapper {
         );
     }
 
-    /**
-     * Converts a domain {@link SearchCount} to the REST response DTO.
-     *
-     * @param searchCount the domain value object
-     * @return the equivalent response DTO
-     */
     public CountResponseDTO toCountResponseDTO(SearchCount searchCount) {
         SearchRequestDTO searchDTO = new SearchRequestDTO(
                 searchCount.search().hotelId(),

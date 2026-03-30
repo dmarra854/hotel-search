@@ -11,10 +11,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+
+@Entity
 @Getter
 @AllArgsConstructor
-@RequiredArgsConstructor
-@Entity
 @Table(name = "hotel_search")
 public class SearchEntity {
 
@@ -34,16 +34,11 @@ public class SearchEntity {
     @Column(name = "check_out", nullable = false)
     private LocalDate checkOut;
 
-    @Column(name = "ages", nullable = false)
-    private String ages;
+    @Column(name = "ages", nullable = false, columnDefinition = "INTEGER[]")
+    private int[] ages;
 
-    public SearchEntity(String searchId, String hotelId, LocalDate checkIn,
-                        LocalDate checkOut, String ages) {
-        this.searchId = searchId;
-        this.hotelId = hotelId;
-        this.checkIn = checkIn;
-        this.checkOut = checkOut;
-        this.ages = ages;
+    public SearchEntity() {
     }
 
+    public int[] getAges() { return ages.clone(); }
 }

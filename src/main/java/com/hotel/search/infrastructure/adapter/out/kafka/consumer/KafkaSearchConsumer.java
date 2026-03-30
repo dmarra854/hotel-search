@@ -24,8 +24,8 @@ public class KafkaSearchConsumer {
     }
 
     @KafkaListener(
-            topics = "${hotel.search.kafka.topic}",
-            groupId = "${spring.kafka.consumer.group-id}",
+            topics = "${hotel.search.kafka.topic:hotel-search-events}",
+            groupId = "${spring.kafka.consumer.group-id:hotel-search-group}",
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consume(String message) {

@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hotel.search.infrastructure.adapter.in.rest.validation.CheckInBeforeCheckOut;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -56,14 +53,9 @@ public record SearchRequestDTO(
         )
         @NotEmpty(message = "ages must contain at least one element")
         @NotNull(message = "ages must not be null")
-        List<Integer> ages
-
+        List<@Min(value = 0, message = "Age cannot be negative") Integer> ages
 ) {
 
-    /**
-     * Compact constructor that defensively copies the {@code ages} list to ensure
-     * no caller can mutate the internal list after construction.
-     */
     public SearchRequestDTO {
         ages = (ages != null) ? List.copyOf(ages) : List.of();
     }

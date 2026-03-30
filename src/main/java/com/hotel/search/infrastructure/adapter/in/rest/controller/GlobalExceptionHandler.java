@@ -6,33 +6,46 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        List<String> errors = new ArrayList<>();
+    public ResponseEntity<ProblemDetail> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request content"
+        );
 
-        ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> String.format("%s: %s", fe.getField(), fe.getDefaultMessage()))
-                .forEach(errors::add);
+        Map<String, String> errors = new HashMap<>();
 
-        ex.getBindingResult().getGlobalErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .forEach(errors::add);
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String fieldName = error.getField();
 
-        String detail = String.join(", ", errors);
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
-        problem.setTitle("Validation failed");
-        return problem;
+            if (fieldName.contains("[")) {
+                fieldName = fieldName.substring(0, fieldName.indexOf("["));
+            }
+
+            Object rejectedValue = error.getRejectedValue();
+            String message = error.getDefaultMessage();
+
+            String finalMessage = String.format("Value '%s' is invalid: %s", rejectedValue, message);
+
+            errors.put(fieldName, finalMessage);
+        });
+
+        problemDetail.setProperty("errors", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

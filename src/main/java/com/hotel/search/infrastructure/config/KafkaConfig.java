@@ -22,7 +22,7 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.consumer.group-id}")
+    @Value("${spring.kafka.consumer.group-id:hotel-search-group}")
     private String groupId;
 
     @Bean
@@ -31,15 +31,20 @@ public class KafkaConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.ACKS_CONFIG, "1"); // Solo confirmación del Leader
-        props.put(ProducerConfig.RETRIES_CONFIG, 2);
-        props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 3000);
+        props.put(ProducerConfig.ACKS_CONFIG, "1");
+
+        props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 120000);
+        props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
         props.put(ProducerConfig.LINGER_MS_CONFIG, 5);
+
+        props.put(ProducerConfig.RETRIES_CONFIG, 2);
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
         props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
         props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+
         return new DefaultKafkaProducerFactory<>(props);
     }
+
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());

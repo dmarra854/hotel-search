@@ -12,3 +12,12 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9093
+    producer:
+      acks: 1
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        "delivery.timeout.ms": 120000
+        "request.timeout.ms": 30000
+        "linger.ms": 5
+        "enable.idempotence": false
